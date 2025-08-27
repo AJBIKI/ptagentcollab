@@ -1,0 +1,29 @@
+{
+  "name": "personal-task-planner-agent",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js",
+    "stop": "kill-port 3000"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "A single-agent system that breaks down goals into tasks, schedules them via APIs, includes ethical bias checks, and sends reminders.",
+  "dependencies": {
+    "@langchain/openai": "^0.6.9",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "googleapis": "^155.0.1",
+    "langchain": "^0.3.31",
+    "node-cron": "^4.2.1",
+    "nodemailer": "^7.0.5",
+    "openai": "^5.15.0"
+  },
+  "devDependencies": {
+    "kill-port": "^2.0.1",
+    "nodemon": "^3.1.10"
+  }
+}
