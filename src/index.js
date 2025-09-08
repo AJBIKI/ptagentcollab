@@ -1,25 +1,27 @@
-import express from 'express';
-import goalsRouter from './routes/goals.js';
-import tasksRouter from './routes/tasks.js';
-import taskRoutes from './routes/taskRoutes.js';
-import { scheduleEmail } from './utils/email.js';
+import express from "express";
+import dotenv from "dotenv";
+import connectDB from "./db/mongo.js";
+import goalsRouter from "./routes/goals.js";
+import tasksRouter from "./routes/tasks.js";
+import taskRoutes from "./routes/taskRoutes.js";
+import { startSchedulers } from "./scheduler/index.js";
+
+dotenv.config();
+connectDB();
 
 const app = express();
-const PORT = process.env.PORT && Number(process.env.PORT) > 0 ? Number(process.env.PORT) : 3000;
-
-// Middleware
 app.use(express.json());
 
-// Routes
-app.use('/api/goals', goalsRouter);
-app.use('/api/tasks', tasksRouter);
-app.use('/api/task-routes', taskRoutes);
+app.use("/api/goals", goalsRouter);
+app.use("/api/tasks", tasksRouter);
+app.use("/api/task-routes", taskRoutes);
 
-// Root endpoint
-app.get('/', (req, res) => {
-  res.send('AI Goal Planner API is running!');
+app.get("/", (_req, res) => {
+  res.send("AI Task Planner with MongoDB is running!");
 });
 
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`✅ Server running at http://localhost:${PORT}`);
+  startSchedulers();
 });

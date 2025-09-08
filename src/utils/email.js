@@ -1,41 +1,61 @@
-import nodemailer from 'nodemailer';
-import cron from 'node-cron';
-import { EMAIL_USER, EMAIL_PASS } from '../config/env.js';
-
+import nodemailer from "nodemailer";
+import config from "../config/env.js";
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: config.email.service,
   auth: {
-    user: EMAIL_USER,
-    pass: EMAIL_PASS,
+    user: config.email.user,
+    pass: config.email.pass,
   },
 });
 
-export default async function sendEmail(to, subject, text) {
+/**
+ * Send email
+ * @param {Object} options
+ * @param {string} options.to - Recipient email
+ * @param {string} options.subject - Email subject
+ * @param {string} options.text - Plain text body
+ * @param {string} [options.html] - Optional HTML body
+ */
+export async function sendEmail({ to, subject, text, html }) {
+  if (!config.email.user || !config.email.pass) {
+    throw new Error("Email credentials not configured in config/env.js");
+  }
+
+  const mailOptions = {
+    from: config.email.user,
+    to,
+    subject,
+    text,
+    html: html || undefined,
+  };
+
   try {
-    console.log(`Attempting to send email to: ${to}`);
-    await transporter.sendMail({
-      from: EMAIL_USER,
-      to,
-      subject,
-      text,
-    });
-    console.log('Email sent successfully!');
-  } catch (error) {
-    console.error('Failed to send email:', error);
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`📧 Email sent: ${info.messageId}`);
+    return info;
+  } catch (err) {
+    console.error("❌ Failed to send email:", err.message);
+    throw err;
   }
 }
 
-export  function scheduleEmail(schedule, to, subject, text) {
-  if (!cron.validate(schedule)) {
-    console.error('Invalid cron schedule: "' + schedule + '". Email not scheduled.');
-    return;
+/**
+ * Format tasks into a plain text email
+ * @param {Array} tasks - Array of task objects
+ * @param {string} header - Header for the email
+ * @returns {string} Formatted task list
+ */
+export function formatTasksText(tasks, header = "Tasks") {
+  if (!tasks || tasks.length === 0) {
+    return `${header}:\nNo tasks found 🎉`;
   }
-  cron.schedule(schedule, () => {
-    console.log(`Executing scheduled email for "${to}" on schedule "${schedule}"`);
-    sendEmail(to, subject, text);
-  }, {
-    scheduled: true,
-    timezone: "Asia/Kolkata"
+
+  const lines = tasks.map((t, i) => {
+    const deadline = t.dueDate
+      ? new Date(t.dueDate).toLocaleString()
+      : "No deadline";
+    return `${i + 1}. ${t.title} (Due: ${deadline}) [${t.completed ? "✅ Done" : "⏳ Pending"}]`;
   });
-  console.log(`Email to "${to}" has been scheduled with schedule: "${schedule}"`);
+
+  return `${header}:\n\n${lines.join("\n")}`;
 }

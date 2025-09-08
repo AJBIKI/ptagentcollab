@@ -5,4 +5,4 @@ logs
 npm-debug.log*
 .DS_Store
 Thumbs.db
-
+#src/db/mongo.js
