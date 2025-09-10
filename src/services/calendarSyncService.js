@@ -1,6 +1,6 @@
 import { google } from "googleapis";
 import Task from "../models/Task.js";
-import connectDB from "../db/mongo.js";
+import connectDB from "../config/db.js";
 
 export async function syncAllTasksToGoogleCalendar() {
   await connectDB();
